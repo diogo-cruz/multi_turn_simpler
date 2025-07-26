@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Environment
+.env
+.env.local
+
+# Results and logs
+results/
+logs/
+*.log
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Data files
+*.jsonl
+clean_results/
+human-evaluator/node_modules/
+human-evaluator/.next/
+
+# Temporary files
+*.tmp
+*.bak
+~*
