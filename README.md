@@ -203,7 +203,7 @@ cp .env.example .env
 If you use this code in your research, please cite:
 
 ```bibtex
-@inproceedings{cruz2025multiturn,
+@inproceedings{yang2025multiturn,
   title={Multi-Turn Jailbreaks Are Simpler Than They Seem},
   author={[Authors]},
   booktitle={SoLaR Workshop at NeurIPS 2025},
