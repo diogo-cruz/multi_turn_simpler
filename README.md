@@ -1,6 +1,6 @@
 # Multi-Turn Jailbreaks Are Simpler Than They Seem
 
-This repository contains the code and data for our paper "Multi-Turn Jailbreaks Are Simpler Than They Seem", accepted at the SoLaR (Society, Language, and Reasoning) workshop at NeurIPS 2025.
+This repository contains the code and data for our paper "Multi-Turn Jailbreaks Are Simpler Than They Seem", accepted at the SoLaR (Society, Language, and Reasoning) workshop at COLM 2025.
 
 ## Abstract
 
@@ -206,7 +206,7 @@ If you use this code in your research, please cite:
 @inproceedings{cruz2025multiturn,
   title={Multi-Turn Jailbreaks Are Simpler Than They Seem},
   author={[Authors]},
-  booktitle={SoLaR Workshop at NeurIPS 2025},
+  booktitle={SoLaR Workshop at COLM 2025},
   year={2025},
   url={https://solar-colm.github.io/}
 }
@@ -222,4 +222,4 @@ MIT License - see LICENSE file for details.
 
 ## Acknowledgments
 
-This work was conducted as part of the AI Safety Camp. We thank the SoLaR workshop organizers and the NeurIPS community.
+This work was conducted as part of the AI Safety Camp. We thank the SoLaR workshop organizers and the COLM community.
