@@ -7,3 +7,7 @@ dash==2.18.2
 plotly==6.0.0
 numpy==2.2.2
 pandas==2.2.3
+jupyter>=1.0.0
+scipy>=1.7.0
+scikit-learn>=1.0.0
+pathlib>=1.0.0

@@ -30,18 +30,16 @@ While defenses against single-turn jailbreak attacks on Large Language Models (L
 └── asr_analysis_utils.py  # Utility functions for ASR analysis
 ```
 
-## Installation
+## Quick Setup
 
 ```bash
-# Create virtual environment (optional but recommended)
+# Create virtual environment and install dependencies
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
 
-# For figure generation and notebooks, also install:
-pip install matplotlib seaborn pandas numpy scipy jupyter
+# Set up API key (only needed for new experiments)
+cp .env.example .env  # Edit with your OpenRouter API key
 ```
 
 ## Reproducing Paper Figures
@@ -181,8 +179,26 @@ python main.py \
 - `--test-case`: Harmful behavior from test_cases/
 - `--target-model`: Model to attack
 - `--attacker-model`: Model generating attacks
-- `--turn-type`: "single" or "multi" (default: "multi")
-- `--n-samples`: Number of attack attempts
+- `--turn-type`: "single_turn" or "multi_turn" (default: "multi_turn")
+- `--samples`: Number of attack attempts
+
+### Output Location
+
+Attack results are automatically saved to:
+```
+./clean_results/final_runs/batch{ID}/{jailbreak_tactic}/
+```
+
+**File naming pattern:**
+```
+{jailbreak_tactic}_{test_case}_{target_model}_{turn_type}_sample{N}_{timestamp}.jsonl
+```
+
+Each JSONL file contains:
+- Full conversation logs (user prompts and assistant responses)
+- Attack success scores and evaluation rationale
+- Token usage statistics for cost analysis
+- Metadata including timestamps and model configurations
 
 ### API Keys
 Set up your API keys in a `.env` file:

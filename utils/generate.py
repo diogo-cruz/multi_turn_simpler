@@ -168,7 +168,7 @@ def get_model_context_window(client, model):
         MODEL_CONTEXT_CACHE[model] = context_length
         return context_length
     except Exception as e:
-        print(f"Warning: Failed to retrieve context length for {model}: {e}")
+        # Silently fall back to default context length when API call fails
         # Don't store in cache if we got an error - use default but don't save it
         return MAX_TOKENS  # Fallback to default without caching the failure
 
