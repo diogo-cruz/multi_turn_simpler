@@ -44,7 +44,7 @@ cp .env.example .env  # Edit with your OpenRouter API key
 
 ## Reproducing Paper Figures
 
-Below are instructions for reproducing each figure from the paper. All scripts assume you have the required data files (either raw JSONL files or the preprocessed CSV).
+Below are instructions for reproducing each figure from the paper. Most scripts can work in two modes: using our provided CSV files (recommended for reproducing paper figures) or processing your own raw JSONL data from experiments (keep local for safety).
 
 ### Figure 2: Single-Turn vs Multi-Turn Attack Success Rates
 
@@ -79,24 +79,27 @@ This mode processes raw JSONL data files from `clean_results/final_runs/batch7/`
 
 These figures show how attack success increases with additional turns or resampling attempts.
 
+**The notebook supports two modes:**
+
+**Mode 1: CSV → Figures (Public/Recommended)**
 ```bash
-# Start Jupyter notebook
-jupyter notebook notebooks/asr_rounds_samples_comparison.ipynb
-
-# In the notebook's control variables cell, set:
-BATCH_NAME = "both"  # Uses both batch6A and batch6B data
-INCLUDE_COMMAND = False  # Only includes direct_request tactic
-
-# Run all cells in the notebook
-
-# The notebook generates PNG files:
-# - batch6a_6b_asr_rounds_samples_original_direct_only.png
-# - batch6a_6b_asr_averaged_original_direct_only.png
-# - And variants with different refusal handling methods
-
-# Convert PNG to PDF if needed:
-# convert batch6a_6b_asr_rounds_samples_original_direct_only.png figure3.pdf
+cd notebooks
+jupyter notebook asr_rounds_samples_comparison.ipynb
+# Set load_from_csv = True in the CSV cell, then run visualization cells
 ```
+Uses pre-processed CSV data files from `csv_results/` directory.
+
+**Mode 2: Raw JSONL → CSV + Figures (For Your Own Experiments)**  
+```bash
+cd notebooks
+jupyter notebook asr_rounds_samples_comparison.ipynb
+# Run all cells to process raw data and generate figures
+```
+Processes raw JSONL data from `clean_results/final_runs/batch6A` and `batch6B`. **Important**: Keep raw data local for safety.
+
+**Outputs:**
+- **Figures**: `result_figures/batch6a_6b_asr_*_direct_only.pdf` and `.png` files
+- **Data**: `csv_results/asr_*_results_batch6a_6b_direct_only.csv` files
 
 ### Figure 4: Reasoning Model Analysis (Stacked Bar Plot)
 
@@ -133,7 +136,8 @@ python3 figure_generation/create_combined_refusal_plot.py
 # Output: refusal_vs_scratch_combined_plot.pdf
 
 # Alternative: Use the notebook for detailed histogram analysis
-jupyter notebook notebooks/refusal_vs_scratch_sampling_analysis.ipynb
+cd notebooks
+jupyter notebook refusal_vs_scratch_sampling_analysis.ipynb
 ```
 
 ### Turn Type Comparisons
@@ -163,7 +167,8 @@ python3 figure_generation/reasoning_token_analysis.py
 This notebook provides theoretical analysis of expected maximum scores:
 
 ```bash
-jupyter notebook notebooks/asr_samples_direct_request_analysis.ipynb
+cd notebooks
+jupyter notebook asr_samples_direct_request_analysis.ipynb
 ```
 
 ## Data Requirements

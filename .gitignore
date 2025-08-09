@@ -27,7 +27,7 @@ logs/
 
 # Jupyter
 .ipynb_checkpoints
-*.ipynb
+
 
 # Data files
 *.jsonl
