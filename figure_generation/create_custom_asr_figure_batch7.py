@@ -5,6 +5,10 @@ Create custom ASR figure with horizontal bar chart
 - Blue/orange color scheme with transparency
 - Handles special case for single-turn data starting with "refused"
 - Generates both PNG and PDF output
+
+Modes:
+1. --mode raw: Process JSONL data to create CSV (requires raw data)
+2. --mode csv: Generate figures from existing CSV (public mode)
 """
 
 import pandas as pd
@@ -12,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import ast
 import os
+import argparse
 
 # Enable LaTeX rendering
 plt.rcParams['text.usetex'] = True
@@ -85,6 +90,10 @@ def get_clean_model_name(model_name):
 def create_custom_three_scenario_figure(data_file):
     """Create custom ASR figure with three scenarios as stacked bars."""
     
+    # Create output directory if it doesn't exist
+    output_dir = "result_figures"
+    os.makedirs(output_dir, exist_ok=True)
+    
     # Read the data
     df = pd.read_csv(data_file)
     
@@ -130,12 +139,14 @@ def create_custom_three_scenario_figure(data_file):
     plt.tight_layout()
     
     # Save both PNG and PDF formats
-    plt.savefig('custom_asr_figure_batch7.png', dpi=300, bbox_inches='tight')
-    plt.savefig('custom_asr_figure_batch7.pdf', bbox_inches='tight')
+    png_path = os.path.join(output_dir, 'custom_asr_figure_batch7.png')
+    pdf_path = os.path.join(output_dir, 'custom_asr_figure_batch7.pdf')
+    plt.savefig(png_path, dpi=300, bbox_inches='tight')
+    plt.savefig(pdf_path, bbox_inches='tight')
     
     print("Custom ASR figure saved as:")
-    print("- custom_asr_figure_batch7.png (300 DPI)")
-    print("- custom_asr_figure_batch7.pdf (vector format)")
+    print(f"- {png_path} (300 DPI)")
+    print(f"- {pdf_path} (vector format)")
     
     plt.close()
 
@@ -411,35 +422,61 @@ def analyze_csv_data_with_refusal_handling(df, tactic_filter='direct_request'):
 def main():
     """Main function to create the modified custom ASR figure with three scenarios for batch7."""
     
+    parser = argparse.ArgumentParser(description='Generate custom ASR figures for batch7 data')
+    parser.add_argument('--mode', choices=['raw', 'csv'], default='csv',
+                       help='Mode: "raw" to process JSONL to CSV, "csv" to generate figures from existing CSV (default: csv)')
+    parser.add_argument('--csv-file', default='csv_results/asr_three_scenarios_batch7_data.csv',
+                       help='Path to CSV file (default: csv_results/asr_three_scenarios_batch7_data.csv)')
+    
+    args = parser.parse_args()
+    
     print("Creating custom ASR figure with three scenarios for batch7...")
     print("=" * 60)
+    print(f"Mode: {args.mode}")
     
-    # Process JSONL data from batch7 with three scenarios
-    jsonl_data = load_and_process_jsonl_data("clean_results/final_runs/batch7")
-    
-    if not jsonl_data:
-        print("No JSONL data found!")
-        return
-    
-    # Analyze with three scenarios
-    results_df = analyze_jsonl_data_with_three_scenarios(jsonl_data)
-    
-    # Filter out models with no data (check any of the three scenarios)
-    results_df = results_df[(results_df['single_original_asr'] > 0) | 
-                           (results_df['single_refusal_handled_asr'] > 0) | 
-                           (results_df['multi_asr'] > 0)]
-    
-    if len(results_df) == 0:
-        print("No results after processing!")
-        return
-    
-    # Save the processed data
-    output_data_file = 'asr_three_scenarios_batch7_data.csv'
-    results_df.to_csv(output_data_file, index=False)
-    print(f"Processed data saved to: {output_data_file}")
-    
-    # Create the figure
-    create_custom_three_scenario_figure(output_data_file)
+    if args.mode == 'raw':
+        print("Processing JSONL data to create CSV...")
+        
+        # Process JSONL data from batch7 with three scenarios
+        jsonl_data = load_and_process_jsonl_data("clean_results/final_runs/batch7")
+        
+        if not jsonl_data:
+            print("No JSONL data found!")
+            return
+        
+        # Analyze with three scenarios
+        results_df = analyze_jsonl_data_with_three_scenarios(jsonl_data)
+        
+        # Filter out models with no data (check any of the three scenarios)
+        results_df = results_df[(results_df['single_original_asr'] > 0) | 
+                               (results_df['single_refusal_handled_asr'] > 0) | 
+                               (results_df['multi_asr'] > 0)]
+        
+        if len(results_df) == 0:
+            print("No results after processing!")
+            return
+        
+        # Create csv_results directory and save the processed data
+        csv_dir = "csv_results"
+        os.makedirs(csv_dir, exist_ok=True)
+        output_data_file = os.path.join(csv_dir, 'asr_three_scenarios_batch7_data.csv')
+        results_df.to_csv(output_data_file, index=False)
+        print(f"Processed data saved to: {output_data_file}")
+        
+        # Create the figure
+        create_custom_three_scenario_figure(output_data_file)
+        
+    elif args.mode == 'csv':
+        print(f"Generating figures from existing CSV: {args.csv_file}")
+        
+        # Check if CSV file exists
+        if not os.path.exists(args.csv_file):
+            print(f"Error: CSV file not found: {args.csv_file}")
+            print("Please make sure the CSV file exists or use --mode raw to generate it from JSONL data.")
+            return
+        
+        # Create the figure from existing CSV
+        create_custom_three_scenario_figure(args.csv_file)
     
     print("=" * 60)
     print("Custom ASR figure creation complete!")

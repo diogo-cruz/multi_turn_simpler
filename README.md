@@ -50,14 +50,30 @@ Below are instructions for reproducing each figure from the paper. All scripts a
 
 This figure compares attack success rates between single-turn and multi-turn approaches.
 
+**The script supports two modes:**
+
+This repository provides systematic testing code for multi-turn jailbreaks, allowing researchers to run their own experiments and generate JSONL files with conversation logs. However, for safety reasons, raw experiment data (JSONL files) should be kept local only. We provide our processed statistics (CSV files) so others can reproduce our figures without needing raw data. The `clean_results/` folder is already in `.gitignore` to prevent accidental sharing of sensitive data.
+
+**Mode 1: CSV → Figures**
 ```bash
-cd figure_generation
-python3 create_custom_asr_figure_batch7.py
+python3 figure_generation/create_custom_asr_figure_batch7.py --mode csv
 
-# Output: custom_asr_figure_batch7.pdf
+# Outputs: 
+# - result_figures/custom_asr_figure_batch7.pdf
+# - result_figures/custom_asr_figure_batch7.png
 ```
+This mode uses the pre-processed CSV data file (`csv_results/asr_three_scenarios_batch7_data.csv`) and is the recommended way to generate figures. Use this mode to reproduce our paper's figures.
 
-**Note**: This script requires batch7 JSONL data files in `clean_results/final_runs/batch7/`.
+**Mode 2: Raw JSONL → CSV + Figures (For Your Own Experiments)**
+```bash
+python3 figure_generation/create_custom_asr_figure_batch7.py --mode raw
+
+# Outputs: 
+# - result_figures/custom_asr_figure_batch7.pdf
+# - result_figures/custom_asr_figure_batch7.png
+# - csv_results/asr_three_scenarios_batch7_data.csv
+```
+This mode processes raw JSONL data files from `clean_results/final_runs/batch7/` that you generate by running your own experiments. **Important**: Do not share the generated JSONL files - keep them local for safety reasons.
 
 ### Figures 3 & 10: Attack Success vs Number of Samples/Turns
 
@@ -87,8 +103,7 @@ INCLUDE_COMMAND = False  # Only includes direct_request tactic
 This figure shows the relationship between reasoning tokens and attack success.
 
 ```bash
-cd figure_generation
-python3 create_stacked_bar_plot.py
+python3 figure_generation/create_stacked_bar_plot.py
 
 # Output: strongreject_vs_reasoning_tokens_stacked_bars.pdf
 ```
@@ -98,8 +113,7 @@ python3 create_stacked_bar_plot.py
 These figures show attack success correlation across different models.
 
 ```bash
-cd figure_generation
-python3 batch7_correlation_analysis.py
+python3 figure_generation/batch7_correlation_analysis.py
 
 # Outputs:
 # - batch7_correlation_llama31_8b.pdf
@@ -114,8 +128,7 @@ python3 batch7_correlation_analysis.py
 This figure compares sampling behavior after refusals vs from scratch.
 
 ```bash
-cd figure_generation
-python3 create_combined_refusal_plot.py
+python3 figure_generation/create_combined_refusal_plot.py
 
 # Output: refusal_vs_scratch_combined_plot.pdf
 
@@ -128,8 +141,7 @@ jupyter notebook notebooks/refusal_vs_scratch_sampling_analysis.ipynb
 Publication-quality comparison plots between different turn types.
 
 ```bash
-cd figure_generation
-python3 publication_quality_plots_by_turns.py
+python3 figure_generation/publication_quality_plots_by_turns.py
 
 # Output: publication_quality_turn_type_comparisons.pdf
 ```
@@ -139,8 +151,7 @@ python3 publication_quality_plots_by_turns.py
 For deeper reasoning token analysis:
 
 ```bash
-cd figure_generation
-python3 reasoning_token_analysis.py
+python3 figure_generation/reasoning_token_analysis.py
 
 # This generates various analysis files about reasoning tokens
 ```
