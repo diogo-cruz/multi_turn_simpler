@@ -2,6 +2,11 @@
 """
 Reasoning Token Analysis
 Analyzes the correlation between reasoning token usage and jailbreak success rates
+
+TWO-MODE SYSTEM:
+- Mode 1 (CSV - default): Load from existing CSV file for analysis
+- Mode 2 (Raw): Process JSONL files, save to CSV, then load CSV for analysis
+  ⚠️  Raw mode processes sensitive conversation data - use with caution!
 """
 
 import json
@@ -13,10 +18,12 @@ from pathlib import Path
 from collections import defaultdict
 import glob
 from scipy import stats
+import argparse
+import os
 import warnings
 warnings.filterwarnings('ignore')
 
-def load_batch_thinking_data(data_dir="../clean_results/final_runs/batch_thinking"):
+def load_batch_thinking_data(data_dir="clean_results/final_runs/batch_thinking"):
     """Load all JSONL files from batch_thinking directory"""
     data_dir = Path(data_dir)
     all_data = []
@@ -194,7 +201,7 @@ def analyze_by_model(df):
     
     return model_df
 
-def create_visualizations(df, output_dir="reasoning_analysis_plots"):
+def create_visualizations(df, output_dir="result_figures"):
     """Create visualizations for reasoning token analysis"""
     
     output_dir = Path(output_dir)
@@ -228,7 +235,7 @@ def create_visualizations(df, output_dir="reasoning_analysis_plots"):
             plt.plot(valid_data['reasoning_tokens'], p(valid_data['reasoning_tokens']), "r--", alpha=0.8, linewidth=2)
     
     plt.tight_layout()
-    plt.savefig(output_dir / 'reasoning_tokens_vs_success_scatter.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{output_dir}/reasoning_tokens_vs_success_scatter.png', dpi=300, bbox_inches='tight')
     plt.show()
     
     # 2. Box plot by reasoning level
@@ -267,7 +274,7 @@ def create_visualizations(df, output_dir="reasoning_analysis_plots"):
                 f'{value:.0f}', ha='center', va='bottom')
     
     plt.tight_layout()
-    plt.savefig(output_dir / 'reasoning_level_analysis.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{output_dir}/reasoning_level_analysis.png', dpi=300, bbox_inches='tight')
     plt.show()
     
     # 3. Heatmap: Model vs Reasoning Level Success Rates
@@ -287,7 +294,7 @@ def create_visualizations(df, output_dir="reasoning_analysis_plots"):
         plt.xlabel('Reasoning Level')
         plt.ylabel('Model')
         plt.tight_layout()
-        plt.savefig(output_dir / 'model_reasoning_heatmap.png', dpi=300, bbox_inches='tight')
+        plt.savefig(f'{output_dir}/model_reasoning_heatmap.png', dpi=300, bbox_inches='tight')
         plt.show()
     
     # 4. Distribution of reasoning tokens
@@ -314,7 +321,7 @@ def create_visualizations(df, output_dir="reasoning_analysis_plots"):
     plt.grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig(output_dir / 'reasoning_tokens_distribution.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{output_dir}/reasoning_tokens_distribution.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 def generate_summary_report(df, correlations, level_stats, model_stats):
@@ -376,17 +383,71 @@ def generate_summary_report(df, correlations, level_stats, model_stats):
     
     return report
 
+def save_to_csv(df, csv_path="csv_results/reasoning_token_analysis_data.csv"):
+    """Save processed data to CSV file"""
+    # Create output directory if it doesn't exist
+    os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+    
+    # Save to CSV
+    df.to_csv(csv_path, index=False)
+    print(f"✓ Data saved to {csv_path}")
+    return csv_path
+
+def load_from_csv(csv_path="csv_results/reasoning_token_analysis_data.csv"):
+    """Load data from CSV file"""
+    if not os.path.exists(csv_path):
+        print(f"✗ CSV file not found: {csv_path}")
+        print("Please run with --mode raw to generate the CSV file first.")
+        return pd.DataFrame()
+    
+    df = pd.read_csv(csv_path)
+    print(f"✓ Loaded data from {csv_path}")
+    print(f"Total records: {len(df)}")
+    print(f"Records with reasoning tokens > 0: {len(df[df['reasoning_tokens'] > 0])}")
+    
+    return df
+
 def main():
     """Main analysis function"""
+    parser = argparse.ArgumentParser(description='Analyze correlation between reasoning tokens and jailbreak success rates')
+    parser.add_argument('--mode', choices=['raw', 'csv'], default='csv',
+                        help='Mode: "raw" to process JSONL to CSV, "csv" to analyze from existing CSV (default: csv)')
+    parser.add_argument('--output-dir', default='result_figures',
+                        help='Output directory for figures and reports (default: result_figures)')
+    
+    args = parser.parse_args()
     
     print("Starting Reasoning Token Analysis...")
+    print(f"Mode: {args.mode}")
     
-    # Load data
-    df = load_batch_thinking_data()
+    if args.mode == 'raw':
+        print("\n⚠️  WARNING: Raw mode processes sensitive conversation data!")
+        print("⚠️  This mode should only be used in secure environments.")
+        print("⚠️  The generated CSV will be safe for sharing.\n")
+        
+        # Process JSONL files
+        df = load_batch_thinking_data()
+        
+        if len(df) == 0:
+            print("No data found! Check if the batch_thinking directory exists and contains JSONL files.")
+            return
+        
+        # Save to CSV
+        csv_path = save_to_csv(df)
+        
+        # Load back from CSV (ensures both modes use same data format)
+        print("\nLoading processed data from CSV...")
+        df = load_from_csv(csv_path)
+        
+    else:  # csv mode
+        # Load from existing CSV
+        df = load_from_csv()
+        
+        if len(df) == 0:
+            return
     
-    if len(df) == 0:
-        print("No data found! Check if the batch_thinking directory exists and contains JSONL files.")
-        return
+    # Create output directories
+    os.makedirs(args.output_dir, exist_ok=True)
     
     # Perform analyses
     correlations = analyze_reasoning_correlation(df)
@@ -395,18 +456,19 @@ def main():
     
     # Create visualizations
     print("\nGenerating visualizations...")
-    create_visualizations(df)
+    create_visualizations(df, args.output_dir)
     
     # Generate summary report
     report = generate_summary_report(df, correlations, level_stats, model_stats)
     
     # Save report
-    with open('reasoning_analysis_report.md', 'w') as f:
+    report_path = f'{args.output_dir}/reasoning_analysis_report.md'
+    with open(report_path, 'w') as f:
         f.write(report)
     
-    print(f"\nAnalysis complete!")
-    print(f"- Visualizations saved to 'reasoning_analysis_plots/' directory")
-    print(f"- Summary report saved to 'reasoning_analysis_report.md'")
+    print(f"\n✓ Analysis complete!")
+    print(f"- Visualizations saved to '{args.output_dir}/' directory")
+    print(f"- Summary report saved to '{report_path}'")
     print(report)
 
 if __name__ == "__main__":

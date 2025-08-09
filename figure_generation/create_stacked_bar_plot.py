@@ -6,6 +6,11 @@ Create stacked bar chart of StrongREJECT score vs reasoning tokens
 - Remove Qwen data
 - Use matplotlib default colors
 - Output as PDF
+
+TWO-MODE SYSTEM:
+- Mode 1 (CSV - default): Load from existing CSV file for figure generation
+- Mode 2 (Raw): Process JSONL files, save to CSV, then load CSV for figures
+  ⚠️  Raw mode processes sensitive conversation data - use with caution!
 """
 
 import json
@@ -14,6 +19,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import matplotlib
+import argparse
+import os
 
 # Enable LaTeX rendering
 matplotlib.rcParams['text.usetex'] = True
@@ -163,7 +170,7 @@ def create_reasoning_token_bins(df):
     
     return df
 
-def create_stacked_bar_plot(single_df, multi_df):
+def create_stacked_bar_plot(single_df, multi_df, output_dir="result_figures"):
     """Create the stacked bar chart with single/multi-turn segments"""
     
     # Remove Qwen and Gemini data, and exclude fake_online_profile test case
@@ -259,7 +266,8 @@ def create_stacked_bar_plot(single_df, multi_df):
     ax.legend(handles=legend_handles, loc='upper left')
     
     plt.tight_layout()
-    plt.savefig('strongreject_vs_reasoning_tokens_stacked_bars.pdf', dpi=300, bbox_inches='tight')
+    output_path = f'{output_dir}/strongreject_vs_reasoning_tokens_stacked_bars.pdf'
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.show()
     
     # Print some statistics
@@ -271,18 +279,81 @@ def create_stacked_bar_plot(single_df, multi_df):
     print("\nMulti-turn scores by model and bin:")
     print(multi_pivot.round(3))
 
+def save_to_csv(single_df, multi_df, csv_path="csv_results/stacked_bar_plot_data.csv"):
+    """Save processed data to CSV file"""
+    # Combine single and multi dataframes
+    combined_df = pd.concat([single_df, multi_df], ignore_index=True)
+    
+    # Create output directory if it doesn't exist
+    os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+    
+    # Save to CSV
+    combined_df.to_csv(csv_path, index=False)
+    print(f"✓ Data saved to {csv_path}")
+    return csv_path
+
+def load_from_csv(csv_path="csv_results/stacked_bar_plot_data.csv"):
+    """Load data from CSV file and separate into single/multi turn"""
+    if not os.path.exists(csv_path):
+        print(f"✗ CSV file not found: {csv_path}")
+        print("Please run with --mode raw to generate the CSV file first.")
+        return pd.DataFrame(), pd.DataFrame()
+    
+    df = pd.read_csv(csv_path)
+    print(f"✓ Loaded data from {csv_path}")
+    print(f"Total conversations: {len(df)}")
+    
+    # Separate by turn type
+    single_df = df[df['turn_type'] == 'single'].copy()
+    multi_df = df[df['turn_type'] == 'multi'].copy()
+    
+    print(f"Single-turn conversations: {len(single_df)}")
+    print(f"Multi-turn conversations: {len(multi_df)}")
+    
+    return single_df, multi_df
+
 def main():
     """Main function"""
+    parser = argparse.ArgumentParser(description='Create stacked bar chart of StrongREJECT score vs reasoning tokens')
+    parser.add_argument('--mode', choices=['raw', 'csv'], default='csv',
+                        help='Mode: "raw" to process JSONL to CSV, "csv" to generate figures from existing CSV (default: csv)')
+    parser.add_argument('--output-dir', default='result_figures',
+                        help='Output directory for figures (default: result_figures)')
+    
+    args = parser.parse_args()
     
     print("Creating stacked bar chart...")
+    print(f"Mode: {args.mode}")
     
-    # Load data
-    single_df, multi_df = load_and_process_data()
+    if args.mode == 'raw':
+        print("\n⚠️  WARNING: Raw mode processes sensitive conversation data!")
+        print("⚠️  This mode should only be used in secure environments.")
+        print("⚠️  The generated CSV will be safe for sharing.\n")
+        
+        # Process JSONL files
+        single_df, multi_df = load_and_process_data()
+        
+        # Save to CSV
+        csv_path = save_to_csv(single_df, multi_df)
+        
+        # Load back from CSV (ensures both modes use same data format)
+        print("\nLoading processed data from CSV...")
+        single_df, multi_df = load_from_csv(csv_path)
+        
+    else:  # csv mode
+        # Load from existing CSV
+        single_df, multi_df = load_from_csv()
+        
+        if len(single_df) == 0 and len(multi_df) == 0:
+            return
+    
+    # Create output directory
+    os.makedirs(args.output_dir, exist_ok=True)
     
     # Create the plot
-    create_stacked_bar_plot(single_df, multi_df)
+    create_stacked_bar_plot(single_df, multi_df, args.output_dir)
     
-    print("Plot saved as 'strongreject_vs_reasoning_tokens_stacked_bars.pdf'")
+    print(f"\n✓ Plot saved to {args.output_dir}/strongreject_vs_reasoning_tokens_stacked_bars.pdf")
 
 if __name__ == "__main__":
     main()

@@ -105,10 +105,20 @@ Processes raw JSONL data from `clean_results/final_runs/batch6A` and `batch6B`. 
 
 This figure shows the relationship between reasoning tokens and attack success.
 
+**Mode 1 (CSV - recommended):**
 ```bash
-python3 figure_generation/create_stacked_bar_plot.py
+python3 figure_generation/create_stacked_bar_plot.py --mode csv
 
-# Output: strongreject_vs_reasoning_tokens_stacked_bars.pdf
+# Output: result_figures/strongreject_vs_reasoning_tokens_stacked_bars.pdf
+```
+
+**Mode 2 (Raw JSONL - for processing new data):**
+```bash
+python3 figure_generation/create_stacked_bar_plot.py --mode raw
+
+# ⚠️  WARNING: Processes sensitive conversation data!
+# Generates: csv_results/stacked_bar_plot_data.csv
+# Output: result_figures/strongreject_vs_reasoning_tokens_stacked_bars.pdf
 ```
 
 ### Correlation Matrices (Appendix)
@@ -130,12 +140,7 @@ python3 figure_generation/batch7_correlation_analysis.py
 
 This figure compares sampling behavior after refusals vs from scratch.
 
-```bash
-python3 figure_generation/create_combined_refusal_plot.py
-
-# Output: refusal_vs_scratch_combined_plot.pdf
-
-# Alternative: Use the notebook for detailed histogram analysis
+**Use the notebook for detailed histogram analysis:**
 cd notebooks
 jupyter notebook refusal_vs_scratch_sampling_analysis.ipynb
 ```
@@ -152,12 +157,27 @@ python3 figure_generation/publication_quality_plots_by_turns.py
 
 ### Additional Reasoning Analysis
 
-For deeper reasoning token analysis:
+For deeper reasoning token analysis and correlation studies:
 
+**Mode 1 (CSV - recommended):**
 ```bash
-python3 figure_generation/reasoning_token_analysis.py
+python3 figure_generation/reasoning_token_analysis.py --mode csv
 
-# This generates various analysis files about reasoning tokens
+# Outputs:
+# - result_figures/reasoning_tokens_vs_success_scatter.png
+# - result_figures/reasoning_level_analysis.png
+# - result_figures/model_reasoning_heatmap.png
+# - result_figures/reasoning_tokens_distribution.png
+# - result_figures/reasoning_analysis_report.md
+```
+
+**Mode 2 (Raw JSONL - for processing new data):**
+```bash
+python3 figure_generation/reasoning_token_analysis.py --mode raw
+
+# ⚠️  WARNING: Processes sensitive conversation data!
+# Generates: csv_results/reasoning_token_analysis_data.csv
+# Then creates all analysis outputs above
 ```
 
 ## Additional Analysis Notebooks

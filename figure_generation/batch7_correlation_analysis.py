@@ -29,7 +29,7 @@ def parse_scores(score_str, turn_type):
 
 def load_and_process_data():
     """Load and process the batch7 data"""
-    df = pd.read_csv('/home/dcruz/multi_turn_jailbreaks/csv_results/master_results_with_fp.csv')
+    df = pd.read_csv('csv_results/master_results_with_fp.csv')
     
     # Filter for batch7 and direct_request jailbreak tactic
     batch7_df = df[df['batch'] == 'batch7'].copy()
@@ -218,7 +218,7 @@ def main():
     single_corr, single_pivot = create_correlation_matrix(df, 'single')
     print_summary_stats(single_corr, single_pivot, 'single')
     plot_correlation_matrix(single_corr, 'single', 
-                          '/home/dcruz/multi_turn_jailbreaks/batch7_single_turn_correlations.pdf')
+                          'result_figures/batch7_single_turn_correlations.pdf')
     
     # Analyze multi-turn correlations
     print("\n" + "="*50)
@@ -228,16 +228,21 @@ def main():
     multi_corr, multi_pivot = create_correlation_matrix(df, 'multi')
     print_summary_stats(multi_corr, multi_pivot, 'multi')
     plot_correlation_matrix(multi_corr, 'multi', 
-                          '/home/dcruz/multi_turn_jailbreaks/batch7_multi_turn_correlations.pdf')
+                          'result_figures/batch7_multi_turn_correlations.pdf')
+    
+    # Create output directories
+    import os
+    os.makedirs('result_figures', exist_ok=True)
+    os.makedirs('csv_results', exist_ok=True)
     
     # Save correlation matrices to CSV
-    single_corr.to_csv('/home/dcruz/multi_turn_jailbreaks/batch7_single_turn_correlation_matrix.csv')
-    multi_corr.to_csv('/home/dcruz/multi_turn_jailbreaks/batch7_multi_turn_correlation_matrix.csv')
+    single_corr.to_csv('csv_results/batch7_single_turn_correlation_matrix.csv')
+    multi_corr.to_csv('csv_results/batch7_multi_turn_correlation_matrix.csv')
     
     print(f"\nAnalysis complete! Correlation matrices saved as:")
-    print(f"- Single-turn: batch7_single_turn_correlations.pdf")
-    print(f"- Multi-turn: batch7_multi_turn_correlations.pdf")
-    print(f"- CSV files: batch7_*_correlation_matrix.csv")
+    print(f"- Single-turn: result_figures/batch7_single_turn_correlations.pdf")
+    print(f"- Multi-turn: result_figures/batch7_multi_turn_correlations.pdf")
+    print(f"- CSV files: csv_results/batch7_*_correlation_matrix.csv")
 
 if __name__ == "__main__":
     main()
