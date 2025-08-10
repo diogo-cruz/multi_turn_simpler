@@ -34,7 +34,7 @@ While defenses against single-turn jailbreak attacks on Large Language Models (L
 
 ```bash
 # Create virtual environment and install dependencies
-python3 -m venv venv
+python3.11 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
